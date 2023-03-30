@@ -19,7 +19,6 @@ app.use("/users", userRoute);
 app.use("/events", eventRoute);
 app.use("/admin", adminRoute);
 
-
 //error handling
 app.use((error, req, res, next) => {
   const statusCode = error.statusCode || 502;
