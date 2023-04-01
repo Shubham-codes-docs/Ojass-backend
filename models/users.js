@@ -144,6 +144,10 @@ const userSchema = new Schema(
       type: String,
       require: true,
     },
+    accomodation: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

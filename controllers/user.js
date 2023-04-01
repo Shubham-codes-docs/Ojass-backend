@@ -103,6 +103,7 @@ exports.signup = async (req, res, next) => {
     accountNumber,
     ifscCode,
     accountName,
+    accomodation,
   } = req.body;
 
   try {
@@ -138,6 +139,7 @@ exports.signup = async (req, res, next) => {
       ifscCode,
       accountName,
       ojassId,
+      accomodation,
     });
 
     await newUser.save();
@@ -412,7 +414,7 @@ exports.createTeam = async (req, res, next) => {
         html: `<p>You have been invited by ${user.name} 
         to join his team for the event ${eventName} in Ojass-2023.
         Click the button below to accept the invite.
-        <a href="http://localhost:3000/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}&userEmail=${m.mail}">Register</a>`,
+        <a href="http://localhost:3000/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}">Register</a>`,
       };
 
       mailer.sendMail(mailOptions, (err, info) => {
@@ -441,10 +443,10 @@ exports.registerForTeamEvent = async (req, res, next) => {
   //   return next(error);
   // }
 
-  const { eventName, captainEmail, userEmail } = req.body;
+  const { eventName, captainEmail } = req.body;
 
   try {
-    const user = await User.findById({ _id: userEmail });
+    const user = await User.findById({ _id: req.userId });
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 404;
