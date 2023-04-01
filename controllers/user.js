@@ -45,8 +45,8 @@ exports.stripe = async (req, res, next) => {
     ],
     mode: "payment",
     customer: paymentId.id,
-    success_url: `${url}/checkout-success`,
-    cancel_url: `${url}/`,
+    success_url: `https://www.ojass.org/checkout-success`,
+    cancel_url: `https://www.ojass.org/`,
   });
 
   // res.redirect(303, session.url);
