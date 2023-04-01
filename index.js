@@ -5,10 +5,12 @@ const cors = require("cors");
 const userRoute = require("./routes/user");
 const eventRoute = require("./routes/events");
 const adminRoute = require("./routes/admin");
+const cors = require('cors')
 
 //configs and setups
 dotenv.config();
 const app = express();
+app.use(cors({origin: '*'}));
 
 //middlewares
 app.use(express.json());

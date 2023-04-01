@@ -131,6 +131,15 @@ const userSchema = new Schema(
       type: Boolean,
       required: false,
     },
+    paymentStatus: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    paymentId: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );

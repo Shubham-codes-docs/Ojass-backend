@@ -17,9 +17,10 @@
     "express-validator": "^6.15.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.2",
-    "nodemailer": "^6.9.1"
+    "nodemailer": "^6.9.1",
+    "stripe": "^11.16.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.21"
+    "nodemon": "^2.0.22"
   }
 }

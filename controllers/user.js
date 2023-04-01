@@ -4,6 +4,80 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/users");
 const Event = require("../models/events");
 const mailer = require("../utils/mailer");
+const stripe = require('stripe')('sk_test_51MqpWMSIsYbFRaMNiQzuJNeIzsbu8piQDiLWspfrnKaKq72xToCaOl7HuL6WeIijyivwR77dLNziG3R5QUEVEu2u000Z48uXI0');
+
+const express = require("express");
+const { getMaxListeners } = require("../models/users");
+
+exports.stripe = async (req, res, next) => {
+
+  const paymentId = await stripe.customers.create({
+    metadata: {
+      userId: req.userId,
+    },
+  });
+
+  const newUser = {};
+  if (paymentId) { newUser.paymentId = paymentId.id; }
+
+  await User.findByIdAndUpdate(req.userId, { $set: newUser }, { new: true })
+
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    const error = new Error("Validation Failed,incorrect fields entered");
+    error.statusCode = 422;
+    return next(error);
+  }
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+        price_data: {
+          currency: 'inr',
+          product_data: {
+            name: 'Registration fee'
+          },
+          unit_amount: 20000,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    customer: paymentId.id,
+    success_url: `${url}/checkout-success`,
+    cancel_url: `${url}/`,
+  });
+
+  // res.redirect(303, session.url);
+  res.send({ url: session.url });
+};
+
+// Stripe webhoook
+
+exports.webhook =
+  async (req, res) => {
+    let data;
+    let eventType;
+    // Webhook signing is recommended, but if the secret is not configured in `config.js`,
+    // retrieve the event data directly from the request body.
+    data = req.body.data.object;
+    eventType = req.body.type;
+
+    // Handle the checkout.session.completed event
+    if (eventType === "checkout.session.completed") {
+      paymentId = data.customer;
+      const user = await User.findOne({ paymentId });
+      const id = user._id;
+      const newUser = {};
+      newUser.paymentStatus = true;
+
+      await User.findByIdAndUpdate(id, { $set: newUser }, { new: true })
+    }
+
+    res.status(200).end();
+  };
 
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -166,6 +240,11 @@ exports.registerForSingleEvent = async (req, res, next) => {
 
   try {
     const user = await User.findById({ _id: req.userId });
+    if(user.paymentStatus == false){
+      const error = new Error("Payment not completed");
+      error.statusCode = 404;
+      return next(error);
+    }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 404;
@@ -178,9 +257,16 @@ exports.registerForSingleEvent = async (req, res, next) => {
       return next(error);
     }
 
+    
     const event = await Event.findOne({ name: eventName });
     if (!event) {
       const error = new Error("No event found");
+      error.statusCode = 404;
+      return next(error);
+    }
+    
+    if(user.paymentStatus == false){
+      const error = new Error("Payment not completed");
       error.statusCode = 404;
       return next(error);
     }

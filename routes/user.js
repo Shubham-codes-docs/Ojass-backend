@@ -33,6 +33,10 @@ router.post("/register-single-event", IS_AUTH, user.registerForSingleEvent);
 router.post("/register-team", IS_AUTH, user.createTeam);
 router.post("/confirm-team-invite", IS_AUTH, user.registerForTeamEvent);
 
-router.get("get-user-by-id", IS_AUTH, user.getUserById);
+router.get("/get-user-by-id", IS_AUTH, user.getUserById);
+
+router.post("/create-checkout-session", IS_AUTH, user.stripe);
+
+router.post("/webhook", user.webhook);
 
 module.exports = router;
