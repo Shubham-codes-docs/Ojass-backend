@@ -15,8 +15,16 @@ const winnerSchema = new Schema({
 });
 
 const eventSchema = new Schema({
-  name: {
+  "EVENT NAME": {
     type: String,
+    required: true,
+  },
+  "TEAM SIZE": {
+    type: Number,
+    required: true,
+  },
+  minSize: {
+    type: Number,
     required: true,
   },
   participants: [

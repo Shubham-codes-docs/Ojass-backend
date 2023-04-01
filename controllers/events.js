@@ -60,3 +60,11 @@ exports.addWinnersToEvents = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.addMin = async (req, res, next) => {
+  const events = await Event.updateMany(
+    { "TEAM SIZE": { $gt: 1 } },
+    { $set: { minSize: 2 } }
+  );
+  res.status(200).json({ msg: "done" });
+};

@@ -140,6 +140,10 @@ const userSchema = new Schema(
       type: String,
       required: false,
     },
+    ojassId: {
+      type: String,
+      require: true,
+    },
   },
   { timestamps: true }
 );

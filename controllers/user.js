@@ -8,6 +8,8 @@ const stripe = require("stripe")(
   "sk_test_51MqpWMSIsYbFRaMNiQzuJNeIzsbu8piQDiLWspfrnKaKq72xToCaOl7HuL6WeIijyivwR77dLNziG3R5QUEVEu2u000Z48uXI0"
 );
 
+const randomIdGenerator = require("../utils/randomIdGenerator");
+
 exports.stripe = async (req, res, next) => {
   const paymentId = await stripe.customers.create({
     metadata: {
@@ -114,6 +116,8 @@ exports.signup = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 12);
     const otp = Math.floor(Math.random() * 9000 + 1000);
     const otpExpiration = Date.now() + 900000;
+    const initials = name.charAt(0) + name.charAt(name.length - 1);
+    const ojassId = await randomIdGenerator(initials);
 
     const newUser = new User({
       name,
@@ -133,6 +137,7 @@ exports.signup = async (req, res, next) => {
       accountNumber,
       ifscCode,
       accountName,
+      ojassId,
     });
 
     await newUser.save();
@@ -255,7 +260,7 @@ exports.registerForSingleEvent = async (req, res, next) => {
       return next(error);
     }
 
-    const event = await Event.findOne({ name: eventName });
+    const event = await Event.findOne({ "EVENT NAME": eventName });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;
@@ -320,10 +325,26 @@ exports.createTeam = async (req, res, next) => {
       return next(error);
     }
 
-    const event = await Event.findOne({ name: eventName });
+    const event = await Event.findOne({ "EVENT NAME": eventName });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;
+      return next(error);
+    }
+
+    if (event.minSize && event.minSize > members.length + 1) {
+      const error = new Error(
+        `There should be a minimum of ${event.minSize}members in the team`
+      );
+      error.statusCode = 403;
+      return next(error);
+    }
+
+    if (event["TEAM SIZE"] < members.length + 1) {
+      const error = new Error(
+        `There should be a maximum of ${event["TEAM SIZE"]}members in the team`
+      );
+      error.statusCode = 403;
       return next(error);
     }
 
@@ -346,6 +367,7 @@ exports.createTeam = async (req, res, next) => {
       return {
         member: m._id,
         inviteStatus: false,
+        mail: m.email,
       };
     });
 
@@ -365,22 +387,44 @@ exports.createTeam = async (req, res, next) => {
 
     event.participants = [...event.participants, teamId[0]._id];
     await event.save();
-    // let mailOptions = {
-    //   from: "ojass2023@nitjsr.ac.in",
-    //   to: user.email,
-    //   subject: "Successfull Registration for Ojass 2023",
-    //   text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
-    // };
+    let mailOptions = {
+      from: "ojass2023@nitjsr.ac.in",
+      to: user.email,
+      subject: "Successfull Registration for Ojass 2023",
+      html: `You have successfully registered for the event ${eventName} in Ojass-2023`,
+    };
 
-    // mailer.sendMail(mailOptions, (err, info) => {
-    //   if (err) {
-    //     console.log(err);
-    //     res.status(401).json({ msg: err });
-    //   } else {
-    //     console.log("Message Sent" + info);
-    //     res.status(200).json({ msg: "Email Sent" });
-    //   }
-    // });
+    mailer.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.status(401).json({ msg: err });
+      } else {
+        console.log("Message Sent" + info);
+        res.status(200).json({ msg: "Email Sent" });
+      }
+    });
+
+    teamMembers.forEach((m) => {
+      let mailOptions = {
+        from: "ojass2023@nitjsr.ac.in",
+        to: m.mail,
+        subject: "Invitation for team registeration ",
+        html: `<p>You have been invited by ${user.name} 
+        to join his team for the event ${eventName} in Ojass-2023.
+        Click the button below to accept the invite.
+        <a href="http://localhost:3000/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}&userEmail=${m.mail}">Register</a>`,
+      };
+
+      mailer.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(err);
+          res.status(401).json({ msg: err });
+        } else {
+          console.log("Message Sent" + info);
+          res.status(200).json({ msg: "Email Sent" });
+        }
+      });
+    });
 
     res.status(200).json({ msg: "Registration successfull", success: 1 });
   } catch (error) {
@@ -391,16 +435,16 @@ exports.createTeam = async (req, res, next) => {
 };
 
 exports.registerForTeamEvent = async (req, res, next) => {
-  if (!req.isAuth) {
-    const error = new Error("Unauthorized access");
-    error.statusCode = 403;
-    return next(error);
-  }
+  // if (!req.isAuth) {
+  //   const error = new Error("Unauthorized access");
+  //   error.statusCode = 403;
+  //   return next(error);
+  // }
 
-  const { eventName, captainEmail } = req.body;
+  const { eventName, captainEmail, userEmail } = req.body;
 
   try {
-    const user = await User.findById({ _id: req.userId });
+    const user = await User.findById({ _id: userEmail });
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 404;
@@ -413,7 +457,7 @@ exports.registerForTeamEvent = async (req, res, next) => {
       return next(error);
     }
 
-    const event = await Event.findOne({ name: eventName });
+    const event = await Event.findOne({ "EVENT NAME": eventName });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;
