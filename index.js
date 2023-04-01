@@ -29,15 +29,15 @@ app.use((error, req, res, next) => {
 //server and db connections
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on Port ${PORT}`);
-  mongoose
-    .connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    .then(() => {
-      console.log("Database connected");
-    })
-    .catch((err) => console.log(err));
-});
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Database connected");
+    app.listen(PORT, () => {
+      console.log(`Server running on Port ${PORT}`);
+    });
+  })
+  .catch((err) => console.log(err));
