@@ -2,6 +2,18 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const memberSchema = new Schema({
+  member: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  inviteStatus: {
+    type: Boolean,
+    required: true,
+  },
+});
+
 const teamSchema = new Schema({
   event: {
     type: Schema.Types.ObjectId,
@@ -10,9 +22,8 @@ const teamSchema = new Schema({
   },
   members: [
     {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      type: memberSchema,
+      required: false,
     },
   ],
   captain: {

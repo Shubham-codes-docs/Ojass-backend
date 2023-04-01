@@ -29,7 +29,9 @@ router.post(
   user.login
 );
 
-router.post("/register", IS_AUTH, user.registerForEvent);
+router.post("/register-single-event", IS_AUTH, user.registerForSingleEvent);
+router.post("/register-team", IS_AUTH, user.createTeam);
+router.post("/confirm-team-invite", IS_AUTH, user.registerForTeamEvent);
 
 router.get("get-user-by-id", IS_AUTH, user.getUserById);
 

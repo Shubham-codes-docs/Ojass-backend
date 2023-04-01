@@ -155,15 +155,14 @@ exports.login = async (req, res, next) => {
   }
 };
 
-exports.registerForEvent = async (req, res, next) => {
+exports.registerForSingleEvent = async (req, res, next) => {
   if (!req.isAuth) {
     const error = new Error("Unauthorized access");
     error.statusCode = 403;
     return next(error);
   }
 
-  const { eventName, isTeamEntry, isTeamCaptain, teamName, captainEmail } =
-    req.body;
+  const { eventName } = req.body;
 
   try {
     const user = await User.findById({ _id: req.userId });
@@ -186,59 +185,188 @@ exports.registerForEvent = async (req, res, next) => {
       return next(error);
     }
 
-    if (!isTeamEntry) {
-      user.events = [...user.events, event._id];
-      event.participants = [...event.participants, user._id];
-      await user.save();
-      await event.save();
-    } else {
-      if (isTeamCaptain) {
-        const team = {
-          captain: user,
-          teamName,
-          event,
-          members: [user._id],
-        };
+    user.events = [...user.events, event._id];
+    event.participants = [...event.participants, user._id];
+    await user.save();
+    await event.save();
+    let mailOptions = {
+      from: "ojass2023@nitjsr.ac.in",
+      to: user.email,
+      subject: "Successfull Registration for Ojass 2023",
+      text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
+    };
 
-        user.eventsWithTeam = [...user.eventsWithTeam, team];
-        const savedUser = await user.save();
+    // mailer.sendMail(mailOptions, (err, info) => {
+    //   if (err) {
+    //     console.log(err);
+    //     res.status(401).json({ msg: err });
+    //   } else {
+    //     console.log("Message Sent" + info);
+    //     res.status(200).json({ msg: "Email Sent" });
+    //   }
+    // });
 
-        const teamId = savedUser.eventsWithTeam.filter((e) => {
-          return e.event.equals(event._id);
-        });
+    res.status(200).json({ msg: "Registration successfull", success: 1 });
+  } catch (error) {
+    const err = new Error(error);
+    err.statusCode = 500;
+    return next(err);
+  }
+};
 
-        event.participants = [...event.participants, teamId[0]._id];
-        await event.save();
-      } else {
-        const captain = await User.findOne({
-          email: captainEmail,
-          "eventsWithTeam.event": event._id,
-        });
+exports.createTeam = async (req, res, next) => {
+  if (!req.isAuth) {
+    const error = new Error("Unauthorized access");
+    error.statusCode = 403;
+    return next(error);
+  }
 
-        if (!captain) {
-          const error = new Error("No captain has registered for this event");
-          error.statusCode = 404;
-          return next(error);
-        }
+  const { eventName, teamName, members } = req.body;
 
-        let team = captain.eventsWithTeam.filter((e) => {
-          return e.event.equals(event._id);
-        });
-        const updatedTeam = team[0];
-        updatedTeam.members.push(user._id);
-        // updatedTeam.members = [...updatedTeam.members, user._id];
-        captain.updateOne(
-          {
-            $email: captainEmail,
-            eventsWithTeam: { $elemMatch: { event: event._id } },
-          },
-          { $set: { "eventsWithTeam.$": updatedTeam } }
-        );
-        user.eventsWithTeam = [...user.eventsWithTeam, updatedTeam];
-        await user.save();
-        await captain.save();
-      }
+  try {
+    const user = await User.findById({ _id: req.userId });
+    if (!user) {
+      const error = new Error("No user found");
+      error.statusCode = 404;
+      return next(error);
     }
+
+    if (!user.isVerified) {
+      const error = new Error("User not verified");
+      error.statusCode = 403;
+      return next(error);
+    }
+
+    const event = await Event.findOne({ name: eventName });
+    if (!event) {
+      const error = new Error("No event found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    const memberSearch = await User.find({
+      email: { $in: members },
+      isVerified: true,
+    });
+    if (memberSearch.length !== members.length) {
+      const invalidIds = memberSearch.filter(function (el) {
+        return members.indexOf(el) < 0;
+      });
+      const error = new Error(
+        `Please check the ids of the given users. Some of them are either incorrect or not verified`
+      );
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    const teamMembers = memberSearch.map((m) => {
+      return {
+        member: m._id,
+        inviteStatus: false,
+      };
+    });
+
+    const team = {
+      captain: user,
+      teamName,
+      event,
+      members: [{ member: user._id, inviteStatus: true }, ...teamMembers],
+    };
+
+    user.eventsWithTeam = [...user.eventsWithTeam, team];
+    const savedUser = await user.save();
+
+    const teamId = savedUser.eventsWithTeam.filter((e) => {
+      return e.event.equals(event._id);
+    });
+
+    event.participants = [...event.participants, teamId[0]._id];
+    await event.save();
+    // let mailOptions = {
+    //   from: "ojass2023@nitjsr.ac.in",
+    //   to: user.email,
+    //   subject: "Successfull Registration for Ojass 2023",
+    //   text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
+    // };
+
+    // mailer.sendMail(mailOptions, (err, info) => {
+    //   if (err) {
+    //     console.log(err);
+    //     res.status(401).json({ msg: err });
+    //   } else {
+    //     console.log("Message Sent" + info);
+    //     res.status(200).json({ msg: "Email Sent" });
+    //   }
+    // });
+
+    res.status(200).json({ msg: "Registration successfull", success: 1 });
+  } catch (error) {
+    const err = new Error(error);
+    err.statusCode = 500;
+    return next(err);
+  }
+};
+
+exports.registerForTeamEvent = async (req, res, next) => {
+  if (!req.isAuth) {
+    const error = new Error("Unauthorized access");
+    error.statusCode = 403;
+    return next(error);
+  }
+
+  const { eventName, captainEmail } = req.body;
+
+  try {
+    const user = await User.findById({ _id: req.userId });
+    if (!user) {
+      const error = new Error("No user found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    if (!user.isVerified) {
+      const error = new Error("User not verified");
+      error.statusCode = 403;
+      return next(error);
+    }
+
+    const event = await Event.findOne({ name: eventName });
+    if (!event) {
+      const error = new Error("No event found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    const captain = await User.findOne({
+      email: captainEmail,
+      "eventsWithTeam.event": event._id,
+    });
+
+    if (!captain) {
+      const error = new Error("No captain has registered for this event");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    let team = captain.eventsWithTeam.filter((e) => {
+      return e.event.equals(event._id);
+    });
+    const updatedTeam = team[0];
+    updatedTeam.members.forEach((m) => {
+      if (m.member.equals(user._id)) {
+        m.inviteStatus = true;
+      }
+    });
+    captain.updateOne(
+      {
+        $email: captainEmail,
+        eventsWithTeam: { $elemMatch: { event: event._id } },
+      },
+      { $set: { "eventsWithTeam.$": updatedTeam } }
+    );
+    user.eventsWithTeam = [...user.eventsWithTeam, updatedTeam];
+    await user.save();
+    await captain.save();
 
     let mailOptions = {
       from: "ojass2023@nitjsr.ac.in",
