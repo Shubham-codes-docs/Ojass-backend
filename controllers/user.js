@@ -248,7 +248,7 @@ exports.registerForSingleEvent = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 404;
+      error.statusCode = 400;
       return next(error);
     }
     if (!user) {
@@ -324,7 +324,7 @@ exports.createTeam = async (req, res, next) => {
 
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 404;
+      error.statusCode = 400;
       return next(error);
     }
 
@@ -462,7 +462,7 @@ exports.registerForTeamEvent = async (req, res, next) => {
 
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 404;
+      error.statusCode = 400;
       return next(error);
     }
 
