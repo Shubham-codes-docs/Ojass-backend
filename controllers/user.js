@@ -321,6 +321,12 @@ exports.createTeam = async (req, res, next) => {
       return next(error);
     }
 
+    if (user.paymentStatus == false) {
+      const error = new Error("Payment not completed");
+      error.statusCode = 404;
+      return next(error);
+    }
+
     if (!user.isVerified) {
       const error = new Error("User not verified");
       error.statusCode = 403;
@@ -437,11 +443,11 @@ exports.createTeam = async (req, res, next) => {
 };
 
 exports.registerForTeamEvent = async (req, res, next) => {
-  // if (!req.isAuth) {
-  //   const error = new Error("Unauthorized access");
-  //   error.statusCode = 403;
-  //   return next(error);
-  // }
+  if (!req.isAuth) {
+    const error = new Error("Unauthorized access");
+    error.statusCode = 403;
+    return next(error);
+  }
 
   const { eventName, captainEmail } = req.body;
 
@@ -449,6 +455,12 @@ exports.registerForTeamEvent = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (!user) {
       const error = new Error("No user found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    if (user.paymentStatus == false) {
+      const error = new Error("Payment not completed");
       error.statusCode = 404;
       return next(error);
     }
