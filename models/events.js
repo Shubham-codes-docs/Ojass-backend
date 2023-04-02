@@ -21,11 +21,11 @@ const eventSchema = new Schema({
   },
   "Team Size": {
     type: Number,
-    required: true,
+    required: false,
   },
   minSize: {
     type: Number,
-    required: true,
+    required: false,
   },
   participants: [
     {

@@ -22,7 +22,7 @@ app.use("/admin", adminRoute);
 //error handling
 app.use((error, req, res, next) => {
   const statusCode = error.statusCode || 502;
-  res.status(statusCode).json({ msg: error.message });
+  res.status(statusCode).json({ msg: error.message, success: 0 });
   next();
 });
 
