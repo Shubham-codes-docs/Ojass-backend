@@ -262,7 +262,7 @@ exports.registerForSingleEvent = async (req, res, next) => {
       return next(error);
     }
 
-    const event = await Event.findOne({ "EVENT NAME": eventName });
+    const event = await Event.findOne({ "Event Name": eventName });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;
@@ -327,7 +327,7 @@ exports.createTeam = async (req, res, next) => {
       return next(error);
     }
 
-    const event = await Event.findOne({ "EVENT NAME": eventName });
+    const event = await Event.findOne({ "Event Name": eventName });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;
@@ -459,7 +459,7 @@ exports.registerForTeamEvent = async (req, res, next) => {
       return next(error);
     }
 
-    const event = await Event.findOne({ "EVENT NAME": eventName });
+    const event = await Event.findOne({ "Event Name": eventName });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;

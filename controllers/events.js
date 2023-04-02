@@ -39,7 +39,7 @@ exports.addWinnersToEvents = async (req, res, next) => {
       error.statusCode = 404;
       return next(error);
     }
-    const event = await Event.findOne({ name });
+    const event = await Event.findOne({ "Event Name": name });
     if (!event) {
       const error = new Error("No event found");
       error.statusCode = 404;
