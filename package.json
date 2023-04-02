@@ -18,7 +18,9 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.2",
     "nodemailer": "^6.9.1",
-    "stripe": "^11.16.0"
+    "pdfkit": "^0.13.0",
+    "stripe": "^11.16.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

@@ -4,9 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/users");
 const Event = require("../models/events");
 const mailer = require("../utils/mailer");
-const stripe = require("stripe")(
-  "sk_test_51MqpWMSIsYbFRaMNiQzuJNeIzsbu8piQDiLWspfrnKaKq72xToCaOl7HuL6WeIijyivwR77dLNziG3R5QUEVEu2u000Z48uXI0"
-);
+const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 
 const randomIdGenerator = require("../utils/randomIdGenerator");
 
@@ -40,7 +38,7 @@ exports.stripe = async (req, res, next) => {
           product_data: {
             name: "Registration fee",
           },
-          unit_amount: 20000,
+          unit_amount: 100,
         },
         quantity: 1,
       },
@@ -79,6 +77,19 @@ exports.webhook = async (req, res) => {
   res.status(200).end();
 };
 
+exports.verifyPayment = async (req, res, next) => {
+  const id = req.userId;
+  const user = await User.findById(id);
+
+  if (user.paymentStatus === false) {
+    const error = new Error("Payment not completed");
+    error.statusCode = 200;
+    return next(error);
+  }
+  success = true;
+  res.json({ success });
+};
+
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -111,7 +122,7 @@ exports.signup = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       const error = new Error("User with given emailId already exists");
-      error.statusCode = 409;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -157,7 +168,7 @@ exports.signup = async (req, res, next) => {
     mailer.sendMail(mailOptions, (err, info) => {
       if (err) {
         console.log(err);
-        res.status(401).json({ msg: err });
+        res.status(200).json({ msg: err });
       } else {
         console.log("Message Sent" + info);
         res.status(200).json({ msg: "Email Sent" });
@@ -181,7 +192,7 @@ exports.validateOtp = async (req, res, next) => {
     });
     if (!user) {
       const error = new Error("Invalid Otp");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     } else {
       user.isVerified = true;
@@ -210,7 +221,7 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) {
       const error = new Error("No user found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
     const result = await bcrypt.compare(password, user.password);
@@ -240,7 +251,7 @@ exports.login = async (req, res, next) => {
 exports.registerForSingleEvent = async (req, res, next) => {
   if (!req.isAuth) {
     const error = new Error("Unauthorized access");
-    error.statusCode = 403;
+    error.statusCode = 200;
     return next(error);
   }
 
@@ -250,31 +261,31 @@ exports.registerForSingleEvent = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 400;
+      error.statusCode = 200;
       return next(error);
     }
     if (!user) {
       const error = new Error("No user found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
     if (!user.isVerified) {
       const error = new Error("User not verified");
-      error.statusCode = 403;
+      error.statusCode = 200;
       return next(error);
     }
 
     const event = await Event.findOne({ "Event Name": eventName });
     if (!event) {
       const error = new Error("No event found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 400;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -292,7 +303,7 @@ exports.registerForSingleEvent = async (req, res, next) => {
     mailer.sendMail(mailOptions, (err, info) => {
       if (err) {
         console.log(err);
-        res.status(401).json({ msg: err });
+        res.status(200).json({ msg: err });
       } else {
         console.log("Message Sent" + info);
         res.status(200).json({ msg: "Email Sent" });
@@ -310,7 +321,7 @@ exports.registerForSingleEvent = async (req, res, next) => {
 exports.createTeam = async (req, res, next) => {
   if (!req.isAuth) {
     const error = new Error("Unauthorized access");
-    error.statusCode = 403;
+    error.statusCode = 200;
     return next(error);
   }
 
@@ -320,26 +331,26 @@ exports.createTeam = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (!user) {
       const error = new Error("No user found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 400;
+      error.statusCode = 200;
       return next(error);
     }
 
     if (!user.isVerified) {
       const error = new Error("User not verified");
-      error.statusCode = 403;
+      error.statusCode = 200;
       return next(error);
     }
 
     const event = await Event.findOne({ "Event Name": eventName });
     if (!event) {
       const error = new Error("No event found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -347,7 +358,7 @@ exports.createTeam = async (req, res, next) => {
       const error = new Error(
         `There should be a minimum of ${event.minSize}members in the team`
       );
-      error.statusCode = 403;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -355,7 +366,7 @@ exports.createTeam = async (req, res, next) => {
       const error = new Error(
         `There should be a maximum of ${event["Team Size"]}members in the team`
       );
-      error.statusCode = 403;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -370,7 +381,7 @@ exports.createTeam = async (req, res, next) => {
       const error = new Error(
         `Please check the ids of the given users. Some of them are either incorrect or not verified`
       );
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -408,7 +419,7 @@ exports.createTeam = async (req, res, next) => {
     mailer.sendMail(mailOptions, (err, info) => {
       if (err) {
         console.log(err);
-        res.status(401).json({ msg: err });
+        res.status(200).json({ msg: err });
       } else {
         console.log("Message Sent" + info);
         res.status(200).json({ msg: "Email Sent" });
@@ -429,7 +440,7 @@ exports.createTeam = async (req, res, next) => {
       mailer.sendMail(mailOptions, (err, info) => {
         if (err) {
           console.log(err);
-          res.status(401).json({ msg: err });
+          res.status(200).json({ msg: err });
         } else {
           console.log("Message Sent" + info);
           res.status(200).json({ msg: "Email Sent" });
@@ -448,7 +459,7 @@ exports.createTeam = async (req, res, next) => {
 exports.registerForTeamEvent = async (req, res, next) => {
   if (!req.isAuth) {
     const error = new Error("Unauthorized access");
-    error.statusCode = 403;
+    error.statusCode = 200;
     return next(error);
   }
 
@@ -458,26 +469,26 @@ exports.registerForTeamEvent = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (!user) {
       const error = new Error("No user found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 400;
+      error.statusCode = 200;
       return next(error);
     }
 
     if (!user.isVerified) {
       const error = new Error("User not verified");
-      error.statusCode = 403;
+      error.statusCode = 200;
       return next(error);
     }
 
     const event = await Event.findOne({ "Event Name": eventName });
     if (!event) {
       const error = new Error("No event found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -488,7 +499,7 @@ exports.registerForTeamEvent = async (req, res, next) => {
 
     if (!captain) {
       const error = new Error("No captain has registered for this event");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 
@@ -522,7 +533,7 @@ exports.registerForTeamEvent = async (req, res, next) => {
     mailer.sendMail(mailOptions, (err, info) => {
       if (err) {
         console.log(err);
-        res.status(401).json({ msg: err });
+        res.status(200).json({ msg: err });
       } else {
         console.log("Message Sent" + info);
         res.status(200).json({ msg: "Email Sent" });
@@ -540,7 +551,7 @@ exports.registerForTeamEvent = async (req, res, next) => {
 exports.getUserById = async (req, res, next) => {
   if (!req.isAuth) {
     const error = new Error("Unauthorized access");
-    error.statusCode = 403;
+    error.statusCode = 200;
     return next(error);
   }
 
@@ -548,7 +559,7 @@ exports.getUserById = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (!user) {
       const error = new Error("No user found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
     res.status(200).json({ ...user._doc, success: 1 });
@@ -562,7 +573,7 @@ exports.getUserById = async (req, res, next) => {
 exports.editBankDetails = async (req, res, next) => {
   if (!req.isAuth) {
     const error = new Error("Unauthorized access");
-    error.statusCode = 403;
+    error.statusCode = 200;
     return next(error);
   }
 
@@ -572,7 +583,7 @@ exports.editBankDetails = async (req, res, next) => {
     const user = await User.findById({ _id: req.userId });
     if (!user) {
       const error = new Error("No user found");
-      error.statusCode = 404;
+      error.statusCode = 200;
       return next(error);
     }
 

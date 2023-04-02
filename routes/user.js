@@ -37,6 +37,8 @@ router.get("/get-user-by-id", IS_AUTH, user.getUserById);
 
 router.post("/create-checkout-session", IS_AUTH, user.stripe);
 
+router.post("/verify-payment", IS_AUTH, user.verifyPayment);
+
 router.post("/webhook", user.webhook);
 
 module.exports = router;
