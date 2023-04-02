@@ -68,3 +68,8 @@ exports.addMin = async (req, res, next) => {
   );
   res.status(200).json({ msg: "done" });
 };
+
+exports.deleteAllEvents = async (req, res, next) => {
+  await Event.deleteMany({});
+  res.status(200).json({ msg: "done" });
+};

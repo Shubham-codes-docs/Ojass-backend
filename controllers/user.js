@@ -342,9 +342,9 @@ exports.createTeam = async (req, res, next) => {
       return next(error);
     }
 
-    if (event["TEAM SIZE"] < members.length + 1) {
+    if (event["Team Size"] < members.length + 1) {
       const error = new Error(
-        `There should be a maximum of ${event["TEAM SIZE"]}members in the team`
+        `There should be a maximum of ${event["Team Size"]}members in the team`
       );
       error.statusCode = 403;
       return next(error);
