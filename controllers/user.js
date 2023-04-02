@@ -104,6 +104,7 @@ exports.signup = async (req, res, next) => {
     ifscCode,
     accountName,
     accomodation,
+    fooding,
   } = req.body;
 
   try {
@@ -140,6 +141,7 @@ exports.signup = async (req, res, next) => {
       accountName,
       ojassId,
       accomodation,
+      fooding,
     });
 
     await newUser.save();
