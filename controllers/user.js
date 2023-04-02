@@ -272,7 +272,7 @@ exports.registerForSingleEvent = async (req, res, next) => {
 
     if (user.paymentStatus == false) {
       const error = new Error("Payment not completed");
-      error.statusCode = 404;
+      error.statusCode = 400;
       return next(error);
     }
 
@@ -287,15 +287,15 @@ exports.registerForSingleEvent = async (req, res, next) => {
       text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
     };
 
-    // mailer.sendMail(mailOptions, (err, info) => {
-    //   if (err) {
-    //     console.log(err);
-    //     res.status(401).json({ msg: err });
-    //   } else {
-    //     console.log("Message Sent" + info);
-    //     res.status(200).json({ msg: "Email Sent" });
-    //   }
-    // });
+    mailer.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.status(401).json({ msg: err });
+      } else {
+        console.log("Message Sent" + info);
+        res.status(200).json({ msg: "Email Sent" });
+      }
+    });
 
     res.status(200).json({ msg: "Registration successfull", success: 1 });
   } catch (error) {
