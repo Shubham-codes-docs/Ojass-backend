@@ -218,6 +218,7 @@ exports.login = async (req, res, next) => {
           userId: user._id,
           username: user.name,
           type: "user",
+          ojassId: user.ojassId,
         },
         process.env.JWT_SECRET
       );
@@ -357,7 +358,7 @@ exports.createTeam = async (req, res, next) => {
     }
 
     const memberSearch = await User.find({
-      email: { $in: members },
+      ojassId: { $in: members },
       isVerified: true,
     });
     if (memberSearch.length !== members.length) {
