@@ -211,7 +211,7 @@ exports.signup = async (req, res, next) => {
       const otp = Math.floor(Math.random() * 9000 + 1000);
       const otpExpiration = Date.now() + 900000;
       const initials = name.charAt(0) + name.charAt(name.length - 1);
-      const ojassId = await randomIdGenerator(initials, schoolType);
+      const ojassId = await randomIdGenerator(initials, studentType);
 
       let mailOptions = {
         from: "ojass2023@nitjsr.ac.in",
