@@ -272,14 +272,12 @@ exports.login = async (req, res, next) => {
         },
         process.env.JWT_SECRET
       );
-      res
-        .status(200)
-        .json({
-          msg: "User logged in successfully",
-          token,
-          success: 1,
-          ojassId: user.ojassId,
-        });
+      res.status(200).json({
+        msg: "User logged in successfully",
+        token,
+        success: 1,
+        ojassId: user.ojassId,
+      });
     } else {
       res.status(200).json({ msg: "Passwords do not match", success: 0 });
     }
@@ -479,7 +477,7 @@ exports.createTeam = async (req, res, next) => {
         html: `<p>You have been invited by ${user.name} 
         to join his team for the event ${eventName} in Ojass-2023.
         Click the button below to accept the invite.
-        <a href="http://localhost:3000/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}">Register</a>`,
+        <a href="https://www.ojass.org/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}">Register</a>`,
       };
 
       mailer.sendMail(mailOptions, (err, info) => {
