@@ -350,7 +350,7 @@ exports.login = async (req, res, next) => {
       error.statusCode = 200;
       return next(error);
     }
-    console.log(user.password);
+    console.log(user);
     const result = await bcrypt.compare(password, user.password);
     if (result) {
       const token = jwt.sign(
