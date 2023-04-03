@@ -341,7 +341,7 @@ exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     let user;
-    user = User.findOne({ email });
+    user = User.findOne({ email: "shubhut17@gmail.com" });
     if (!user) {
       user = Student.findOne({ email });
     }
