@@ -341,6 +341,7 @@ exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     let user;
+    console.log(email, password);
     user = User.findOne({ email });
     if (!user) {
       user = Student.findOne({ email });
