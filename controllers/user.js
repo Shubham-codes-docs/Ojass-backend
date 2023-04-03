@@ -123,7 +123,7 @@ exports.signup = async (req, res, next) => {
       studentType,
     } = req.body;
     try {
-      const existingUser = await User.findOne({ email });
+      const existingUser = await await User.findOne({ email });
       if (existingUser) {
         const error = new Error("User with given emailId already exists");
         error.statusCode = 200;
@@ -200,7 +200,7 @@ exports.signup = async (req, res, next) => {
         tshirtSize,
         studentType,
       } = req.body;
-      const existingUser = await Student.findOne({ email });
+      const existingUser = await await Student.findOne({ email });
       if (existingUser) {
         const error = new Error("User with given emailId already exists");
         error.statusCode = 200;
@@ -262,9 +262,9 @@ exports.resendOtp = async (req, res, next) => {
   const { email } = req.body;
   try {
     let user;
-    user = User.findOne({ email });
+    user = await User.findOne({ email });
     if (!user) {
-      user = Student.findOne({ email });
+      user = await Student.findOne({ email });
     }
     const otp = Math.floor(Math.random() * 9000 + 1000);
     const otpExpiration = Date.now() + 900000;
@@ -341,17 +341,15 @@ exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     let user;
-    console.log(email);
-    user = User.findOne({ email });
+    user = await User.findOne({ email });
     if (!user) {
-      user = Student.findOne({ email });
+      user = await Student.findOne({ email });
     }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 200;
       return next(error);
     }
-    console.log(user);
     const result = await bcrypt.compare(password, user.password);
     if (result) {
       const token = jwt.sign(
@@ -390,9 +388,9 @@ exports.registerForSingleEvent = async (req, res, next) => {
 
   try {
     let user;
-    user = User.findById({ _id: req.userId });
+    user = await User.findById({ _id: req.userId });
     if (!user) {
-      user = Student.findById({ _id: req.userId });
+      user = await Student.findById({ _id: req.userId });
     }
 
     if (!user) {
@@ -469,9 +467,9 @@ exports.createTeam = async (req, res, next) => {
 
   try {
     let user;
-    user = User.findById({ _id: req.userId });
+    user = await User.findById({ _id: req.userId });
     if (!user) {
-      user = Student.findById({ _id: req.userId });
+      user = await Student.findById({ _id: req.userId });
     }
     if (!user) {
       const error = new Error("No user found");
@@ -611,9 +609,9 @@ exports.registerForTeamEvent = async (req, res, next) => {
 
   try {
     let user;
-    user = User.findById({ _id: req.userId });
+    user = await User.findById({ _id: req.userId });
     if (!user) {
-      user = Student.findById({ _id: req.userId });
+      user = await Student.findById({ _id: req.userId });
     }
     if (!user) {
       const error = new Error("No user found");
@@ -713,9 +711,9 @@ exports.getUserById = async (req, res, next) => {
 
   try {
     let user;
-    user = User.findById({ _id: req.userId });
+    user = await User.findById({ _id: req.userId });
     if (!user) {
-      user = Student.findById({ _id: req.userId });
+      user = await Student.findById({ _id: req.userId });
     }
     if (!user) {
       const error = new Error("No user found");
@@ -741,9 +739,9 @@ exports.editBankDetails = async (req, res, next) => {
 
   try {
     let user;
-    user = User.findById({ _id: req.userId });
+    user = await User.findById({ _id: req.userId });
     if (!user) {
-      user = Student.findById({ _id: req.userId });
+      user = await Student.findById({ _id: req.userId });
     }
     if (!user) {
       const error = new Error("No user found");
