@@ -101,7 +101,7 @@ exports.signup = async (req, res, next) => {
   }
   const { studentType } = req.body;
 
-  if (studentType === "schoolStudent") {
+  if (studentType === "school") {
     const {
       name,
       branch,
