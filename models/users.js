@@ -144,14 +144,6 @@ const userSchema = new Schema(
       type: String,
       require: true,
     },
-    accomodation: {
-      type: String,
-      required: true,
-    },
-    fooding: {
-      type: String,
-      required: true,
-    },
     tshirtSize: {
       type: String,
       required: true,
