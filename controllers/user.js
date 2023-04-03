@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/users");
 const Event = require("../models/events");
 const mailer = require("../utils/mailer");
+const generatePdf = require("../utils/generatePdf");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 
 const randomIdGenerator = require("../utils/randomIdGenerator");
@@ -153,6 +154,7 @@ exports.signup = async (req, res, next) => {
       ojassId,
       accomodation,
       fooding,
+      tshirt,
     });
 
     await newUser.save();
@@ -259,7 +261,10 @@ exports.registerForSingleEvent = async (req, res, next) => {
 
   try {
     const user = await User.findById({ _id: req.userId });
-    if (user.paymentStatus == false) {
+    if (
+      user.paymentStatus == false &&
+      eventName !== "Biz-Tech Quiz with a Scientific Twist"
+    ) {
       const error = new Error("Payment not completed");
       error.statusCode = 200;
       return next(error);
@@ -269,46 +274,53 @@ exports.registerForSingleEvent = async (req, res, next) => {
       error.statusCode = 200;
       return next(error);
     }
-
-    if (!user.isVerified) {
-      const error = new Error("User not verified");
-      error.statusCode = 200;
-      return next(error);
-    }
-
-    const event = await Event.findOne({ "Event Name": eventName });
-    if (!event) {
-      const error = new Error("No event found");
-      error.statusCode = 200;
-      return next(error);
-    }
-
-    if (user.paymentStatus == false) {
-      const error = new Error("Payment not completed");
-      error.statusCode = 200;
-      return next(error);
-    }
-
-    user.events = [...user.events, event._id];
-    event.participants = [...event.participants, user._id];
-    await user.save();
-    await event.save();
-    let mailOptions = {
-      from: "ojass2023@nitjsr.ac.in",
-      to: user.email,
-      subject: "Successfull Registration for Ojass 2023",
-      text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
+    let pdfData = {
+      name: user.name,
+      image: user.photo,
+      ojassId: user.ojassId,
+      event: eventName,
     };
+    generatePdf(pdfData);
 
-    mailer.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.log(err);
-        res.status(200).json({ msg: err });
-      } else {
-        console.log("Message Sent" + info);
-        res.status(200).json({ msg: "Email Sent" });
-      }
-    });
+    // if (!user.isVerified) {
+    //   const error = new Error("User not verified");
+    //   error.statusCode = 200;
+    //   return next(error);
+    // }
+
+    // const event = await Event.findOne({ "Event Name": eventName });
+    // if (!event) {
+    //   const error = new Error("No event found");
+    //   error.statusCode = 200;
+    //   return next(error);
+    // }
+
+    // if (user.paymentStatus == false) {
+    //   const error = new Error("Payment not completed");
+    //   error.statusCode = 200;
+    //   return next(error);
+    // }
+
+    // user.events = [...user.events, event._id];
+    // event.participants = [...event.participants, user._id];
+    // await user.save();
+    // await event.save();
+    // let mailOptions = {
+    //   from: "ojass2023@nitjsr.ac.in",
+    //   to: user.email,
+    //   subject: "Successfull Registration for Ojass 2023",
+    //   text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
+    // };
+
+    // mailer.sendMail(mailOptions, (err, info) => {
+    //   if (err) {
+    //     console.log(err);
+    //     res.status(200).json({ msg: err });
+    //   } else {
+    //     console.log("Message Sent" + info);
+    //     res.status(200).json({ msg: "Email Sent" });
+    //   }
+    // });
 
     res.status(200).json({ msg: "Registration successfull", success: 1 });
   } catch (error) {
