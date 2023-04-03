@@ -1,6 +1,6 @@
-const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const { v4 } = require("uuid");
+const PDFDocument = require("pdfkit");
 
 const generatePdf = async (user) => {
   // Create a document
