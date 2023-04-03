@@ -16,6 +16,21 @@ exports.stripe = async (req, res, next) => {
     },
   });
 
+  let user;
+  user = await User.findById({ _id: req.userId });
+  if (!user) {
+    user = await Student.findById({ _id: req.userId });
+  }
+  if (!user) {
+    const error = new Error("Invalid Otp");
+    error.statusCode = 200;
+    return next(error);
+  }
+
+  const userType = user.studentType;
+  const amount =
+    userType === "school" ? "399" : userType === "nitjsr" ? "799" : "1199";
+
   const newUser = {};
   if (paymentId) {
     newUser.paymentId = paymentId.id;
@@ -39,7 +54,7 @@ exports.stripe = async (req, res, next) => {
           product_data: {
             name: "Registration fee",
           },
-          unit_amount: 100,
+          unit_amount: amount * 100,
         },
         quantity: 1,
       },
