@@ -134,6 +134,23 @@ exports.signup = async (req, res, next) => {
     const initials = name.charAt(0) + name.charAt(name.length - 1);
     const ojassId = await randomIdGenerator(initials);
 
+    let mailOptions = {
+      from: "ojass2023@nitjsr.ac.in",
+      to: email,
+      subject: "Verify account.",
+      text: `Your otp for verification is ${otp}. This would expire after 15 minutes. 
+      Please verify your account to successfully register for events`,
+    };
+
+    mailer.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.status(200).json({ msg: err });
+      } else {
+        console.log("Message Sent" + info);
+      }
+    });
+
     const newUser = new User({
       name,
       branch,
@@ -159,24 +176,6 @@ exports.signup = async (req, res, next) => {
     });
 
     await newUser.save();
-
-    let mailOptions = {
-      from: "ojass2023@nitjsr.ac.in",
-      to: email,
-      subject: "Verify account.",
-      text: `Your otp for verification is ${otp}. This would expire after 15 minutes. 
-      Please verify your account to successfully register for events`,
-    };
-
-    mailer.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.log(err);
-        res.status(200).json({ msg: err });
-      } else {
-        console.log("Message Sent" + info);
-        res.status(200).json({ msg: "Email Sent" });
-      }
-    });
 
     res
       .status(201)
