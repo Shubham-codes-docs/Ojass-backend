@@ -117,6 +117,7 @@ exports.signup = async (req, res, next) => {
     accountName,
     accomodation,
     fooding,
+    tshirt,
   } = req.body;
 
   try {
