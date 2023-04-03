@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
+const Student = require("../models/studentUser");
 const Event = require("../models/events");
 const mailer = require("../utils/mailer");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
@@ -98,59 +99,10 @@ exports.signup = async (req, res, next) => {
     error.statusCode = 422;
     return next(error);
   }
-  const {
-    name,
-    branch,
-    college,
-    year,
-    email,
-    dob,
-    photo,
-    mobile,
-    whatsapp,
-    password,
-    registrationId,
-    bankName,
-    accountNumber,
-    ifscCode,
-    accountName,
-    accomodation,
-    fooding,
-    tshirt,
-  } = req.body;
+  const { studentType } = req.body;
 
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      const error = new Error("User with given emailId already exists");
-      error.statusCode = 200;
-      return next(error);
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const otp = Math.floor(Math.random() * 9000 + 1000);
-    const otpExpiration = Date.now() + 900000;
-    const initials = name.charAt(0) + name.charAt(name.length - 1);
-    const ojassId = await randomIdGenerator(initials);
-
-    let mailOptions = {
-      from: "ojass2023@nitjsr.ac.in",
-      to: email,
-      subject: "Verify account.",
-      text: `You have successfully created your account for Ojass-2023. Your Ojass Id is ${ojassId}.Your otp for verification is ${otp}. This would expire after 15 minutes. 
-      Please verify your account to successfully register for events`,
-    };
-
-    mailer.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.log(err);
-        res.status(200).json({ msg: err });
-      } else {
-        console.log("Message Sent" + info);
-      }
-    });
-
-    const newUser = new User({
+  if (studentType === "schoolStudent") {
+    const {
       name,
       branch,
       college,
@@ -160,34 +112,160 @@ exports.signup = async (req, res, next) => {
       photo,
       mobile,
       whatsapp,
-      password: hashedPassword,
-      otp,
-      otpExpiration,
+      password,
       registrationId,
       bankName,
       accountNumber,
       ifscCode,
       accountName,
-      ojassId,
       accomodation,
-      fooding,
-      tshirt,
-    });
+      tshirtSize,
+      studentType,
+    } = req.body;
+    try {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        const error = new Error("User with given emailId already exists");
+        error.statusCode = 200;
+        return next(error);
+      }
 
-    await newUser.save();
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const otp = Math.floor(Math.random() * 9000 + 1000);
+      const otpExpiration = Date.now() + 900000;
+      const initials = name.charAt(0) + name.charAt(name.length - 1);
+      const ojassId = await randomIdGenerator(initials, studentType);
 
-    res
-      .status(201)
-      .json({ otp, success: 1, msg: "User registered successfully!" });
-  } catch (err) {
-    return next(new Error(err));
+      let mailOptions = {
+        from: "ojass2023@nitjsr.ac.in",
+        to: email,
+        subject: "Verify account.",
+        text: `You have successfully created your account for Ojass-2023. Your Ojass Id is ${ojassId}.Your otp for verification is ${otp}. This would expire after 15 minutes. 
+        Please verify your account to successfully register for events`,
+      };
+
+      mailer.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(err);
+          res.status(200).json({ msg: err });
+        } else {
+          console.log("Message Sent" + info);
+        }
+      });
+
+      const newUser = new User({
+        name,
+        branch,
+        college,
+        year,
+        email,
+        dob,
+        photo,
+        mobile,
+        whatsapp,
+        password: hashedPassword,
+        otp,
+        otpExpiration,
+        registrationId,
+        bankName,
+        accountNumber,
+        ifscCode,
+        accountName,
+        ojassId,
+        accomodation,
+        tshirtSize,
+        studentType,
+      });
+
+      await newUser.save();
+
+      res
+        .status(201)
+        .json({ otp, success: 1, msg: "User registered successfully!" });
+    } catch (err) {
+      return next(new Error(err));
+    }
+  } else {
+    try {
+      const {
+        name,
+        schoolName,
+        schoolClass,
+        email,
+        dob,
+        photo,
+        mobile,
+        parentNumber,
+        password,
+        tshirtSize,
+        studentType,
+      } = req.body;
+      const existingUser = await Student.findOne({ email });
+      if (existingUser) {
+        const error = new Error("User with given emailId already exists");
+        error.statusCode = 200;
+        return next(error);
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const otp = Math.floor(Math.random() * 9000 + 1000);
+      const otpExpiration = Date.now() + 900000;
+      const initials = name.charAt(0) + name.charAt(name.length - 1);
+      const ojassId = await randomIdGenerator(initials, schoolType);
+
+      let mailOptions = {
+        from: "ojass2023@nitjsr.ac.in",
+        to: email,
+        subject: "Verify account.",
+        text: `You have successfully created your account for Ojass-2023. Your Ojass Id is ${ojassId}.Your otp for verification is ${otp}. This would expire after 15 minutes. 
+        Please verify your account to successfully register for events`,
+      };
+
+      mailer.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(err);
+          res.status(200).json({ msg: err });
+        } else {
+          console.log("Message Sent" + info);
+        }
+      });
+
+      const newUser = new Student({
+        name,
+        schoolName,
+        schoolClass,
+        email,
+        dob,
+        photo,
+        mobile,
+        parentNumber,
+        password: hashedPassword,
+        otp,
+        otpExpiration,
+        ojassId,
+        studentType,
+        tshirtSize,
+      });
+
+      await newUser.save();
+
+      res
+        .status(201)
+        .json({ otp, success: 1, msg: "User registered successfully!" });
+    } catch (err) {
+      return next(new Error(err));
+    }
   }
 };
 
 exports.resendOtp = async (req, res, next) => {
   const { email } = req.body;
   try {
-    const user = await User.findOne({ email });
+    let user;
+    user = User.findOne({ email });
+    if (!user) {
+      user = Student.findOne({ email });
+    }
     const otp = Math.floor(Math.random() * 9000 + 1000);
     const otpExpiration = Date.now() + 900000;
 
@@ -223,10 +301,17 @@ exports.resendOtp = async (req, res, next) => {
 exports.validateOtp = async (req, res, next) => {
   const { otp } = req.body;
   try {
-    const user = await User.findOne({
+    let user;
+    user = await User.findOne({
       otp,
       otpExpiration: { $gt: Date.now() },
     });
+    if (!user) {
+      user = await Student.findOne({
+        otp,
+        otpExpiration: { $gt: Date.now() },
+      });
+    }
     if (!user) {
       const error = new Error("Invalid Otp");
       error.statusCode = 200;
@@ -255,7 +340,11 @@ exports.login = async (req, res, next) => {
   }
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
+    let user;
+    user = User.findOne({ email });
+    if (!user) {
+      user = Student.findOne({ email });
+    }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 200;
@@ -298,17 +387,23 @@ exports.registerForSingleEvent = async (req, res, next) => {
   const { eventName } = req.body;
 
   try {
-    const user = await User.findById({ _id: req.userId });
+    let user;
+    user = User.findById({ _id: req.userId });
+    if (!user) {
+      user = Student.findById({ _id: req.userId });
+    }
+
+    if (!user) {
+      const error = new Error("No user found");
+      error.statusCode = 200;
+      return next(error);
+    }
+
     if (
       user.paymentStatus == false &&
       eventName !== "Biz-Tech Quiz with a Scientific Twist"
     ) {
       const error = new Error("Payment not completed");
-      error.statusCode = 200;
-      return next(error);
-    }
-    if (!user) {
-      const error = new Error("No user found");
       error.statusCode = 200;
       return next(error);
     }
@@ -371,7 +466,11 @@ exports.createTeam = async (req, res, next) => {
   const { eventName, teamName, members } = req.body;
 
   try {
-    const user = await User.findById({ _id: req.userId });
+    let user;
+    user = User.findById({ _id: req.userId });
+    if (!user) {
+      user = Student.findById({ _id: req.userId });
+    }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 200;
@@ -509,7 +608,11 @@ exports.registerForTeamEvent = async (req, res, next) => {
   const { eventName, captainEmail } = req.body;
 
   try {
-    const user = await User.findById({ _id: req.userId });
+    let user;
+    user = User.findById({ _id: req.userId });
+    if (!user) {
+      user = Student.findById({ _id: req.userId });
+    }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 200;
@@ -535,10 +638,18 @@ exports.registerForTeamEvent = async (req, res, next) => {
       return next(error);
     }
 
-    const captain = await User.findOne({
+    let captain;
+    captain = await User.findOne({
       email: captainEmail,
       "eventsWithTeam.event": event._id,
     });
+
+    if (!captain) {
+      captain = await Student.findOne({
+        email: captainEmail,
+        "eventsWithTeam.event": event._id,
+      });
+    }
 
     if (!captain) {
       const error = new Error("No captain has registered for this event");
@@ -599,7 +710,11 @@ exports.getUserById = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findById({ _id: req.userId });
+    let user;
+    user = User.findById({ _id: req.userId });
+    if (!user) {
+      user = Student.findById({ _id: req.userId });
+    }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 200;
@@ -623,7 +738,11 @@ exports.editBankDetails = async (req, res, next) => {
   const { bankName, accountNumber, ifscCode, accountName } = req.body;
 
   try {
-    const user = await User.findById({ _id: req.userId });
+    let user;
+    user = User.findById({ _id: req.userId });
+    if (!user) {
+      user = Student.findById({ _id: req.userId });
+    }
     if (!user) {
       const error = new Error("No user found");
       error.statusCode = 200;

@@ -37,25 +37,17 @@ const teamSchema = new Schema({
   },
 });
 
-const userSchema = new Schema(
+const studentSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
     },
-    branch: {
+    schoolName: {
       type: String,
       required: true,
     },
-    college: {
-      type: String,
-      required: true,
-    },
-    registrationId: {
-      type: String,
-      required: true,
-    },
-    year: {
+    schoolClass: {
       type: String,
       required: true,
     },
@@ -75,11 +67,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    whatsapp: {
+    parentNumber: {
       type: String,
       required: true,
     },
     password: {
+      type: String,
+      required: true,
+    },
+    studentType: {
       type: String,
       required: true,
     },
@@ -101,22 +97,6 @@ const userSchema = new Schema(
     },
     tshirt: {
       type: Boolean,
-      required: false,
-    },
-    bankName: {
-      type: String,
-      required: false,
-    },
-    accountNumber: {
-      type: String,
-      required: false,
-    },
-    ifscCode: {
-      type: String,
-      required: false,
-    },
-    accountName: {
-      type: String,
       required: false,
     },
     otp: {
@@ -144,14 +124,6 @@ const userSchema = new Schema(
       type: String,
       require: true,
     },
-    accomodation: {
-      type: String,
-      required: true,
-    },
-    fooding: {
-      type: String,
-      required: true,
-    },
     tshirtSize: {
       type: String,
       required: true,
@@ -160,4 +132,4 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("studentUser", studentSchema);
