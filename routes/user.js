@@ -22,6 +22,7 @@ router.post(
 );
 
 router.post("/validate-otp", user.validateOtp);
+router.post("resend-otp", user.resendOtp);
 
 router.post(
   "/login",

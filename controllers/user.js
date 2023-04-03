@@ -185,6 +185,42 @@ exports.signup = async (req, res, next) => {
   }
 };
 
+exports.resendOtp = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    const otp = Math.floor(Math.random() * 9000 + 1000);
+    const otpExpiration = Date.now() + 900000;
+
+    user.otp = otp;
+    user.otpExpiration = otpExpiration;
+    await user.save();
+    let mailOptions = {
+      from: "ojass2023@nitjsr.ac.in",
+      to: email,
+      subject: "Verify account.",
+      text: `Your otp for verification is ${otp}. This would expire after 15 minutes. 
+      Please verify your account to successfully register for events`,
+    };
+
+    mailer.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.status(200).json({ msg: err });
+      } else {
+        console.log("Message Sent" + info);
+      }
+    });
+    res
+      .status(201)
+      .json({ otp, success: 1, msg: "User registered successfully!" });
+  } catch (error) {
+    const err = new Error(error);
+    err.statusCode = 500;
+    return next(err);
+  }
+};
+
 exports.validateOtp = async (req, res, next) => {
   const { otp } = req.body;
   try {
