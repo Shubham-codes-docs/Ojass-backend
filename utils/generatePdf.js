@@ -1,5 +1,5 @@
-import PDFDocument from "pdfkit";
-import fs from "fs";
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 const { v4 } = require("uuid");
 
 const generatePdf = async (user) => {
@@ -23,10 +23,10 @@ const generatePdf = async (user) => {
     valign: "center",
   });
 
-  doc
-    .addPage()
-    .fontSize(15)
-    .text("Generating PDF with the help of pdfkit", 100, 100);
+  doc.fontSize(15).text(`Name:${user.name}`, 100, 100);
+  doc.fontSize(15).text(`Ojass-Id:${user.ojassId}`, 100, 100);
+  doc.fontSize(15).text(`Event:${user.event}`, 100, 100);
+  doc.fontSize(15).text(`Status:Registered`, 100, 100);
 
   // Apply some transforms and render an SVG path with the
   // 'even-odd' fill rule
@@ -37,14 +37,8 @@ const generatePdf = async (user) => {
     .fill("red", "even-odd")
     .restore();
 
-  // Add some text with annotations
-  doc
-    .addPage()
-    .fillColor("blue")
-    .text("The link for GeeksforGeeks website", 100, 100)
-
-    .link(100, 100, 160, 27, "https://www.geeksforgeeks.org/");
-
   // Finalize PDF file
   doc.end();
 };
+
+module.exports = generatePdf;

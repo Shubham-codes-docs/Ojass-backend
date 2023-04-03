@@ -152,6 +152,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    tshirt: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

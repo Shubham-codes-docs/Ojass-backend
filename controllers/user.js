@@ -280,47 +280,47 @@ exports.registerForSingleEvent = async (req, res, next) => {
       ojassId: user.ojassId,
       event: eventName,
     };
-    generatePdf(pdfData);
+    // generatePdf(pdfData);
 
-    // if (!user.isVerified) {
-    //   const error = new Error("User not verified");
-    //   error.statusCode = 200;
-    //   return next(error);
-    // }
+    if (!user.isVerified) {
+      const error = new Error("User not verified");
+      error.statusCode = 200;
+      return next(error);
+    }
 
-    // const event = await Event.findOne({ "Event Name": eventName });
-    // if (!event) {
-    //   const error = new Error("No event found");
-    //   error.statusCode = 200;
-    //   return next(error);
-    // }
+    const event = await Event.findOne({ "Event Name": eventName });
+    if (!event) {
+      const error = new Error("No event found");
+      error.statusCode = 200;
+      return next(error);
+    }
 
-    // if (user.paymentStatus == false) {
-    //   const error = new Error("Payment not completed");
-    //   error.statusCode = 200;
-    //   return next(error);
-    // }
+    if (user.paymentStatus == false) {
+      const error = new Error("Payment not completed");
+      error.statusCode = 200;
+      return next(error);
+    }
 
-    // user.events = [...user.events, event._id];
-    // event.participants = [...event.participants, user._id];
-    // await user.save();
-    // await event.save();
-    // let mailOptions = {
-    //   from: "ojass2023@nitjsr.ac.in",
-    //   to: user.email,
-    //   subject: "Successfull Registration for Ojass 2023",
-    //   text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
-    // };
+    user.events = [...user.events, event._id];
+    event.participants = [...event.participants, user._id];
+    await user.save();
+    await event.save();
+    let mailOptions = {
+      from: "ojass2023@nitjsr.ac.in",
+      to: user.email,
+      subject: "Successfull Registration for Ojass 2023",
+      text: `You have successfully registered for the event ${eventName} in Ojass-2023`,
+    };
 
-    // mailer.sendMail(mailOptions, (err, info) => {
-    //   if (err) {
-    //     console.log(err);
-    //     res.status(200).json({ msg: err });
-    //   } else {
-    //     console.log("Message Sent" + info);
-    //     res.status(200).json({ msg: "Email Sent" });
-    //   }
-    // });
+    mailer.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.status(200).json({ msg: err });
+      } else {
+        console.log("Message Sent" + info);
+        res.status(200).json({ msg: "Email Sent" });
+      }
+    });
 
     res.status(200).json({ msg: "Registration successfull", success: 1 });
   } catch (error) {
