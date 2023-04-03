@@ -341,7 +341,6 @@ exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     let user;
-    console.log(email, password);
     user = User.findOne({ email });
     if (!user) {
       user = Student.findOne({ email });
@@ -351,6 +350,7 @@ exports.login = async (req, res, next) => {
       error.statusCode = 200;
       return next(error);
     }
+    console.log(user.password);
     const result = await bcrypt.compare(password, user.password);
     if (result) {
       const token = jwt.sign(
