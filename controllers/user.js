@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/users");
 const Event = require("../models/events");
 const mailer = require("../utils/mailer");
-const generatePdf = require("../utils/generatePdf");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 
 const randomIdGenerator = require("../utils/randomIdGenerator");
@@ -138,7 +137,7 @@ exports.signup = async (req, res, next) => {
       from: "ojass2023@nitjsr.ac.in",
       to: email,
       subject: "Verify account.",
-      text: `Your otp for verification is ${otp}. This would expire after 15 minutes. 
+      text: `You have successfully created your account for Ojass-2023. Your Ojass Id is ${ojassId}.Your otp for verification is ${otp}. This would expire after 15 minutes. 
       Please verify your account to successfully register for events`,
     };
 
@@ -199,7 +198,7 @@ exports.resendOtp = async (req, res, next) => {
       from: "ojass2023@nitjsr.ac.in",
       to: email,
       subject: "Verify account.",
-      text: `Your otp for verification is ${otp}. This would expire after 15 minutes. 
+      text: `You have successfully created your account for Ojass-2023. Your Ojass Id is ${user.ojassId}.Your otp for verification is ${otp}. This would expire after 15 minutes. 
       Please verify your account to successfully register for events`,
     };
 
@@ -275,7 +274,12 @@ exports.login = async (req, res, next) => {
       );
       res
         .status(200)
-        .json({ msg: "User logged in successfully", token, success: 1 });
+        .json({
+          msg: "User logged in successfully",
+          token,
+          success: 1,
+          ojassId: user.ojassId,
+        });
     } else {
       res.status(200).json({ msg: "Passwords do not match", success: 0 });
     }
@@ -310,13 +314,6 @@ exports.registerForSingleEvent = async (req, res, next) => {
       error.statusCode = 200;
       return next(error);
     }
-    let pdfData = {
-      name: user.name,
-      image: user.photo,
-      ojassId: user.ojassId,
-      event: eventName,
-    };
-    // generatePdf(pdfData);
 
     if (!user.isVerified) {
       const error = new Error("User not verified");
