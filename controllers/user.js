@@ -366,6 +366,7 @@ exports.login = async (req, res, next) => {
         token,
         success: 1,
         ojassId: user.ojassId,
+        type: user.studentType,
       });
     } else {
       res.status(200).json({ msg: "Passwords do not match", success: 0 });
