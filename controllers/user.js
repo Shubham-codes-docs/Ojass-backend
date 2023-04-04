@@ -159,15 +159,6 @@ exports.signup = async (req, res, next) => {
         Please verify your account to successfully register for events`,
       };
 
-      mailer.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          console.log(err);
-          res.status(200).json({ msg: err });
-        } else {
-          console.log("Message Sent" + info);
-        }
-      });
-
       const newUser = new User({
         name,
         branch,
@@ -194,9 +185,17 @@ exports.signup = async (req, res, next) => {
 
       await newUser.save();
 
-      res
-        .status(201)
-        .json({ otp, success: 1, msg: "User registered successfully!" });
+      mailer.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(err);
+          res.status(200).json({ msg: err });
+        } else {
+          console.log("Message Sent" + info);
+          res
+            .status(201)
+            .json({ otp, success: 1, msg: "User registered successfully!" });
+        }
+      });
     } catch (err) {
       return next(new Error(err));
     }
@@ -236,15 +235,6 @@ exports.signup = async (req, res, next) => {
         Please verify your account to successfully register for events`,
       };
 
-      mailer.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          console.log(err);
-          res.status(200).json({ msg: err });
-        } else {
-          console.log("Message Sent" + info);
-        }
-      });
-
       const newUser = new Student({
         name,
         schoolName,
@@ -264,9 +254,17 @@ exports.signup = async (req, res, next) => {
 
       await newUser.save();
 
-      res
-        .status(201)
-        .json({ otp, success: 1, msg: "User registered successfully!" });
+      mailer.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(err);
+          res.status(200).json({ msg: err });
+        } else {
+          console.log("Message Sent" + info);
+          res
+            .status(201)
+            .json({ otp, success: 1, msg: "User registered successfully!" });
+        }
+      });
     } catch (err) {
       return next(new Error(err));
     }
@@ -376,12 +374,22 @@ exports.login = async (req, res, next) => {
         },
         process.env.JWT_SECRET
       );
+
+      const loggedInUser = {
+        name: user.name,
+        email: user.email,
+        ojassId: user.ojassId,
+        type: user.studentType,
+        paymentStatus: user.paymentStatus,
+        photo: user.photo,
+        verificationStatus: user.isVerified,
+      };
+
       res.status(200).json({
         msg: "User logged in successfully",
         token,
+        loggedInUser,
         success: 1,
-        ojassId: user.ojassId,
-        type: user.studentType,
       });
     } else {
       res.status(200).json({ msg: "Passwords do not match", success: 0 });
