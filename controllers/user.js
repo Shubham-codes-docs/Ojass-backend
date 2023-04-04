@@ -469,10 +469,9 @@ exports.registerForSingleEvent = async (req, res, next) => {
       } else {
         console.log("Message Sent" + info);
         res.status(200).json({ msg: "Email Sent" });
+        res.status(200).json({ msg: "Registration successfull", success: 1 });
       }
     });
-
-    res.status(200).json({ msg: "Registration successfull", success: 1 });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -575,14 +574,14 @@ exports.createTeam = async (req, res, next) => {
 
     event.participants = [...event.participants, teamId[0]._id];
     await event.save();
-    let mailOptions = {
+    let mailOptions1 = {
       from: "ojass2023@nitjsr.ac.in",
       to: user.email,
       subject: "Successfull Registration for Ojass 2023",
       html: `You have successfully registered for the event ${eventName} in Ojass-2023`,
     };
 
-    mailer.sendMail(mailOptions, (err, info) => {
+    mailer.sendMail(mailOptions1, (err, info) => {
       if (err) {
         console.log(err);
         res.status(200).json({ msg: err });
@@ -592,29 +591,29 @@ exports.createTeam = async (req, res, next) => {
       }
     });
 
-    teamMembers.forEach((m) => {
-      let mailOptions = {
-        from: "ojass2023@nitjsr.ac.in",
-        to: m.mail,
-        subject: "Invitation for team registeration ",
-        html: `<p>You have been invited by ${user.name} 
-        to join his team for the event ${eventName} in Ojass-2023.
-        Click the button below to accept the invite.
-        <a href="https://www.ojass.org/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}">Register</a>`,
-      };
-
-      mailer.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          console.log(err);
-          res.status(200).json({ msg: err });
-        } else {
-          console.log("Message Sent" + info);
-          res.status(200).json({ msg: "Email Sent" });
-        }
-      });
+    const membersEmail = teamMembers.map((m) => {
+      return m.mail;
     });
 
-    res.status(200).json({ msg: "Registration successfull", success: 1 });
+    let mailOptions2 = {
+      from: "ojass2023@nitjsr.ac.in",
+      to: membersEmail,
+      subject: "Invitation for team registeration ",
+      html: `<p>You have been invited by ${user.name} 
+      to join his team for the event ${eventName} in Ojass-2023.
+      Click the button below to accept the invite.
+      <a href="https://www.ojass.org/ConfirmInvite?eventName=${eventName}&captainEmail=${user.email}">Register</a>`,
+    };
+
+    mailer.sendMail(mailOptions2, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.status(200).json({ msg: err });
+      } else {
+        console.log("Message Sent" + info);
+        res.status(200).json({ msg: "Registration successfull", success: 1 });
+      }
+    });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
