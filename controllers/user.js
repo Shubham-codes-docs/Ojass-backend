@@ -138,9 +138,13 @@ exports.signup = async (req, res, next) => {
       studentType,
     } = req.body;
     try {
-      const existingUser = await await User.findOne({ email });
+      const existingUser = await User.findOne({
+        $or: [{ email }, { mobile }, { registrationId }],
+      });
       if (existingUser) {
-        const error = new Error("User with given emailId already exists");
+        const error = new Error(
+          "User with given email, mobile or registration Id already exists"
+        );
         error.statusCode = 200;
         return next(error);
       }
@@ -214,9 +218,13 @@ exports.signup = async (req, res, next) => {
         tshirtSize,
         studentType,
       } = req.body;
-      const existingUser = await await Student.findOne({ email });
+      const existingUser = await Student.findOne({
+        $or: [{ email }, { mobile }],
+      });
       if (existingUser) {
-        const error = new Error("User with given emailId already exists");
+        const error = new Error(
+          "User with given email or mobile already exists"
+        );
         error.statusCode = 200;
         return next(error);
       }
@@ -394,6 +402,39 @@ exports.login = async (req, res, next) => {
     } else {
       res.status(200).json({ msg: "Passwords do not match", success: 0 });
     }
+  } catch (error) {
+    const err = new Error(error);
+    err.statusCode = 500;
+    return next(err);
+  }
+};
+
+exports.addUpiPaymentInfo = async (req, res, next) => {
+  if (!req.isAuth) {
+    const error = new Error("Unauthorized access");
+    error.statusCode = 200;
+    return next(error);
+  }
+
+  const { transactionId, transactionImage } = req.body;
+
+  try {
+    let user;
+    user = await User.findById({ _id: req.userId });
+    if (!user) {
+      user = await Student.findById({ _id: req.userId });
+    }
+
+    if (!user) {
+      const error = new Error("No user found");
+      error.statusCode = 200;
+      return next(error);
+    }
+
+    user.transactionId = transactionId;
+    user.transactionImage = transactionImage;
+    await user.save();
+    res.status(200).json({ msg: "UPI Details added successfully", success: 1 });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;

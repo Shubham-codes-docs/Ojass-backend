@@ -33,6 +33,7 @@ router.post(
 router.post("/register-single-event", IS_AUTH, user.registerForSingleEvent);
 router.post("/register-team", IS_AUTH, user.createTeam);
 router.post("/confirm-team-invite", IS_AUTH, user.registerForTeamEvent);
+router.post("/update-upi-details", IS_AUTH, user.addUpiPaymentInfo);
 
 router.get("/get-user-by-id", IS_AUTH, user.getUserById);
 

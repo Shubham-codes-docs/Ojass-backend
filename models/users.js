@@ -152,6 +152,14 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    transactionId: {
+      type: String,
+      required: false,
+    },
+    transactionImage: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );
