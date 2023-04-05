@@ -299,11 +299,11 @@ exports.resendOtp = async (req, res, next) => {
         res.status(200).json({ msg: err });
       } else {
         console.log("Message Sent" + info);
+        res
+          .status(201)
+          .json({ otp, success: 1, msg: "User registered successfully!" });
       }
     });
-    res
-      .status(201)
-      .json({ otp, success: 1, msg: "User registered successfully!" });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
